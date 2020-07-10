@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2006-2009 Guillaume Pellerin
+# Copyright (C) 2013 Guillaume Pellerin
 
 # <yomguy@parisson.com>
 
@@ -21,23 +21,26 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-from threading import Thread
+
+import sys
+from deefuzzer.tools.xmltodict import *
 
 
-class OSCController(Thread):
-    def __init__(self, port):
-        Thread.__init__(self)
-        import liblo
+class XML2Various(object):
 
-        self.port = port
-        try:
-            self.server = liblo.Server(self.port)
-        except liblo.ServerError as err:
-            print(str(err))
+    def __init__(self, xml_str):
+        self.dict = xmltodict(xml_str, 'utf-8')
 
-    def add_method(self, path, type, method):
-        self.server.add_method(path, type, method)
+    def to_yaml(self):
+        import yaml
+        return yaml.dump(self.dict)
 
-    def run(self):
-        while True:
-            self.server.recv(100)
+
+if __name__ == '__main__':
+    xml_file = open(sys.argv[-2], 'r')
+    yaml_file = open(sys.argv[-1], 'w')
+    yaml_file.write(XML2Various(xml_file.read()).to_yaml())
+    xml_file.close()
+    yaml_file.close()
+
+

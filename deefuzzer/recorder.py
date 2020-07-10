@@ -21,23 +21,28 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-from threading import Thread
+
+import os
 
 
-class OSCController(Thread):
-    def __init__(self, port):
-        Thread.__init__(self)
-        import liblo
+class Recorder:
+    """A file streaming iterator"""
 
-        self.port = port
+    def __init__(self, path):
+        self.path = path
+        self.recording = True
+
+    def open(self, filename):
+        self.filename = filename
+        self.media = open(self.path + os.sep + self.filename, 'w')
+
+    def write(self, chunk):
         try:
-            self.server = liblo.Server(self.port)
-        except liblo.ServerError as err:
-            print(str(err))
+            if self.recording:
+                self.media.write(chunk)
+                self.media.flush()
+        except:
+            pass
 
-    def add_method(self, path, type, method):
-        self.server.add_method(path, type, method)
-
-    def run(self):
-        while True:
-            self.server.recv(100)
+    def close(self):
+        self.media.close()
